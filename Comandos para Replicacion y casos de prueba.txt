@@ -1,0 +1,42 @@
+//REPLICACION 
+//PASO 1: consola 1
+md c:\mongodb\db1
+md c:\mongodb\db2
+md c:\mongodb\db3
+//PASO 2: consola 2
+mongod --dbpath c:\mongodb\db1 --replSet replica1 --port 27018
+//consola 3
+mongod --dbpath c:\mongodb\db2 --replSet replica1 --port 27019
+//consola 4
+mongod --dbpath c:\mongodb\db3 --replSet replica1 --port 27020
+//PASO 3: consola 2
+mongosh --port 27018
+//PASO 4: consola 2
+rs.initiate()
+//PASO 5: consola 2
+rs.add("localhost:27019")
+//PASO 5: consola 2
+rs.add("localhost:27020")
+//PASO 5: consola 2
+rs.conf()
+
+//CASOS PRUEBAS
+//Caso 1: Verificación de lectura desde el nodo secundario
+//INSERTAR BASE DE DATOS 
+use db_TorneoFinalVoleibol
+show collections
+//consola 6
+mongosh --port 27019
+use db_TorneoFinalVoleibol
+show collections
+//Caso 2: Verificación de las actualizaciones en todas las replicas
+//consola 5
+db.resultados.updateMany({"numeroSet": "1"}, {$set:{"equipos.0.puntuacion":"25", "equipos.1.puntuacion":"23"}})
+db.resultados.find()
+//consola 6
+db.resultados.find()
+//Caso 3: Simular un fallo en el nodo primario:
+//consola 5
+mongosh --port 27019
+use db_TorneoFinalVoleibol
+show collections
